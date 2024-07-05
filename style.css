@@ -1,5 +1,6 @@
+/* style.css */
+
 /* Custom styles */
-/* No need to repeat Bootstrap styles */
 
 h1, h2 {
     text-align: center;
@@ -44,4 +45,12 @@ footer {
     left: 0;
     bottom: 0;
     width: 100%;
+}
+
+/* Digital clock styles */
+#digital-clock {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
 }
