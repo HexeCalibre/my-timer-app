@@ -1,0 +1,36 @@
+/* Custom styles */
+/* No need to repeat Bootstrap styles */
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.timer-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+span {
+    display: block;
+    margin-top: 10px;
+    font-size: 18px;
+    color: #555;
+}
+
+/* Table styles */
+table {
+    margin-top: 20px;
+}
+
+td button {
+    margin: 0;
+}
