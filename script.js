@@ -1,173 +1,173 @@
-let activeStartTime, idleStartTime;
-let totalActiveTime = 0, totalIdleTime = 0;
-let logData = JSON.parse(localStorage.getItem('logData')) || [];
-let activeInterval, idleInterval;
-let isPaused = false; // Track pause state
+// Define variables to track active and idle times
+let activeStartTime = null;
+let idleStartTime = null;
+let activeTime = 0;
+let idleTime = 0;
 
-// Function to start the active timer
+// Function to update active timer display
+function updateActiveTimerDisplay() {
+  const now = Date.now();
+  const elapsedTime =
+    activeTime + (activeStartTime !== null ? now - activeStartTime : 0);
+  document.getElementById(
+    "active-time"
+  ).textContent = `Active Time: ${formatTime(elapsedTime)}`;
+}
+
+// Function to update idle timer display
+function updateIdleTimerDisplay() {
+  const now = Date.now();
+  const elapsedTime =
+    idleTime + (idleStartTime !== null ? now - idleStartTime : 0);
+  document.getElementById("idle-time").textContent = `Idle Time: ${formatTime(
+    elapsedTime
+  )}`;
+}
+
+// Function to start active timer
 function startActiveTimer() {
-    if (isPaused) {
-        resumeTimer();
-        return;
+  if (activeStartTime === null) {
+    activeStartTime = Date.now();
+    document.getElementById("start-active").setAttribute("disabled", "true");
+    document.getElementById("start-idle").removeAttribute("disabled");
+    document.getElementById("pause-timer").removeAttribute("disabled");
+
+    // Pause idle timer if running
+    if (idleStartTime !== null) {
+      idleTime += Date.now() - idleStartTime;
+      idleStartTime = null;
+      updateIdleTimerDisplay();
     }
-    
-    if (idleStartTime) {
-        clearInterval(idleInterval);
-        const elapsedTime = new Date() - idleStartTime;
-        totalIdleTime += elapsedTime;
-        idleStartTime = null;
-        updateIdleTime();
-        saveData();
-    }
-    
-    activeStartTime = new Date();
-    activeInterval = setInterval(updateActiveTime, 1000);
-    document.getElementById('start-active').setAttribute('disabled', 'disabled');
-    document.getElementById('start-idle').removeAttribute('disabled');
-    document.getElementById('pause-timer').removeAttribute('disabled');
-    isPaused = false;
+
+    // Log entry for starting active timer
+    logAction("Started Active Timer");
+  }
 }
 
-// Function to start the idle timer
+// Function to start idle timer
 function startIdleTimer() {
-    if (isPaused) {
-        resumeTimer();
-        return;
+  if (idleStartTime === null) {
+    idleStartTime = Date.now();
+    document.getElementById("start-idle").setAttribute("disabled", "true");
+    document.getElementById("start-active").removeAttribute("disabled");
+
+    // Pause active timer if running
+    if (activeStartTime !== null) {
+      activeTime += Date.now() - activeStartTime;
+      activeStartTime = null;
+      updateActiveTimerDisplay();
     }
-    
-    if (activeStartTime) {
-        clearInterval(activeInterval);
-        const elapsedTime = new Date() - activeStartTime;
-        totalActiveTime += elapsedTime;
-        activeStartTime = null;
-        updateActiveTime();
-        saveData();
-    }
-    
-    idleStartTime = new Date();
-    idleInterval = setInterval(updateIdleTime, 1000);
-    document.getElementById('start-idle').setAttribute('disabled', 'disabled');
-    document.getElementById('start-active').removeAttribute('disabled');
-    document.getElementById('pause-timer').removeAttribute('disabled');
-    isPaused = false;
+
+    // Log entry for starting idle timer
+    logAction("Started Idle Timer");
+  }
 }
 
-// Function to pause the timers
-function pauseTimer() {
-    clearInterval(activeInterval);
-    clearInterval(idleInterval);
-    isPaused = true;
-    document.getElementById('pause-timer').innerText = 'Resume';
-    document.getElementById('start-active').setAttribute('disabled', 'disabled');
-    document.getElementById('start-idle').setAttribute('disabled', 'disabled');
-}
-
-// Function to resume the timers
-function resumeTimer() {
-    if (activeStartTime) {
-        activeInterval = setInterval(updateActiveTime, 1000);
-        document.getElementById('start-active').setAttribute('disabled', 'disabled');
-        document.getElementById('start-idle').removeAttribute('disabled');
-    } else if (idleStartTime) {
-        idleInterval = setInterval(updateIdleTime, 1000);
-        document.getElementById('start-idle').setAttribute('disabled', 'disabled');
-        document.getElementById('start-active').removeAttribute('disabled');
-    }
-    isPaused = false;
-    document.getElementById('pause-timer').innerText = 'Pause';
-}
-
-// Event listener for starting Active timer
-document.getElementById('start-active').addEventListener('click', startActiveTimer);
-
-// Event listener for starting Idle timer
-document.getElementById('start-idle').addEventListener('click', startIdleTimer);
-
-// Event listener for pausing/resuming timers
-document.getElementById('pause-timer').addEventListener('click', function() {
-    if (isPaused) {
-        resumeTimer();
-    } else {
-        pauseTimer();
-    }
-});
-
-// Event listener for resetting timers
-document.getElementById('reset-timers').addEventListener('click', () => {
-    clearInterval(activeInterval);
-    clearInterval(idleInterval);
-    totalActiveTime = 0;
-    totalIdleTime = 0;
+// Function to pause timers
+function pauseTimers() {
+  const now = Date.now();
+  if (activeStartTime !== null) {
+    activeTime += now - activeStartTime;
     activeStartTime = null;
+  }
+  if (idleStartTime !== null) {
+    idleTime += now - idleStartTime;
     idleStartTime = null;
-    updateActiveTime();
-    updateIdleTime();
-    document.getElementById('start-active').removeAttribute('disabled');
-    document.getElementById('start-idle').setAttribute('disabled', 'disabled');
-    document.getElementById('pause-timer').setAttribute('disabled', 'disabled');
-    document.getElementById('pause-timer').innerText = 'Pause'; // Reset pause button text
-    isPaused = false; // Reset pause state
+  }
+  updateActiveTimerDisplay();
+  updateIdleTimerDisplay();
+  document.getElementById("start-active").removeAttribute("disabled");
+  document.getElementById("start-idle").removeAttribute("disabled");
+  document.getElementById("pause-timer").setAttribute("disabled", "true");
+
+  // Log entry for pausing timers
+  logAction("Paused Timers");
+}
+
+// Function to reset timers
+function resetTimers() {
+  activeStartTime = null;
+  idleStartTime = null;
+  activeTime = 0;
+  idleTime = 0;
+  updateActiveTimerDisplay();
+  updateIdleTimerDisplay();
+  document.getElementById("start-active").removeAttribute("disabled");
+  document.getElementById("start-idle").setAttribute("disabled", "true");
+  document.getElementById("pause-timer").setAttribute("disabled", "true");
+
+  // Log entry for resetting timers
+  logAction("Reset Timers");
+}
+
+// Function to format time as HH:MM:SS
+function formatTime(milliseconds) {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+// Function to log actions with timestamp
+function logAction(action) {
+  const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const logEntry = {
+    timestamp: timestamp,
+    action: action,
+  };
+
+  // Append log entry to table
+  appendLogEntry(logEntry);
+}
+
+// Function to append log entry to table
+function appendLogEntry(logEntry) {
+  const tableBody = document
+    .getElementById("log-table")
+    .getElementsByTagName("tbody")[0];
+  const row = tableBody.insertRow();
+  const id = new Date().getTime(); // Unique ID based on timestamp
+  row.innerHTML = `
+      <td>${id}</td>
+      <td>${logEntry.timestamp}</td>
+      <td>${formatTime(activeTime)}</td>
+      <td>${formatTime(idleTime)}</td>
+      <td>${logEntry.action}</td>
+      <td><button class="btn btn-danger btn-sm delete-btn">Delete</button></td>
+    `;
+
+  // Add event listener to delete button
+  const deleteButton = row.querySelector(".delete-btn");
+  deleteButton.addEventListener("click", () => {
+    row.remove(); // Remove the row from the table
+  });
+}
+
+// Event listeners for buttons
+document.getElementById("start-active").addEventListener("click", () => {
+  startActiveTimer();
 });
 
-// Update active timer display
-function updateActiveTime() {
-    const elapsedTime = activeStartTime ? (new Date() - activeStartTime) + totalActiveTime : totalActiveTime;
-    document.getElementById('active-time').innerText = `Active Time: ${formatTime(elapsedTime)}`;
-}
+document.getElementById("start-idle").addEventListener("click", () => {
+  startIdleTimer();
+});
 
-// Update idle timer display
-function updateIdleTime() {
-    const elapsedTime = idleStartTime ? (new Date() - idleStartTime) + totalIdleTime : totalIdleTime;
-    document.getElementById('idle-time').innerText = `Idle Time: ${formatTime(elapsedTime)}`;
-}
+document.getElementById("pause-timer").addEventListener("click", () => {
+  pauseTimers();
+});
 
-// Format time in HH:mm:ss format
-function formatTime(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-    const seconds = String(totalSeconds % 60).padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-}
+document.getElementById("reset-timers").addEventListener("click", () => {
+  resetTimers();
+});
 
-// Save timer data to localStorage
-function saveData() {
-    const data = {
-        id: Date.now(),
-        activeTime: totalActiveTime,
-        idleTime: totalIdleTime
-    };
-    logData.push(data);
-    localStorage.setItem('logData', JSON.stringify(logData));
-    renderLogTable();
-}
+// Update timers display every second
+setInterval(() => {
+  updateActiveTimerDisplay();
+  updateIdleTimerDisplay();
+}, 1000);
 
-// Delete entry from log data and update localStorage
-function deleteData(id) {
-    logData = logData.filter(entry => entry.id !== id);
-    localStorage.setItem('logData', JSON.stringify(logData));
-    renderLogTable();
-}
-
-// Render log table with stored data
-function renderLogTable() {
-    const tbody = document.getElementById('log-table').querySelector('tbody');
-    tbody.innerHTML = '';
-    logData.forEach(entry => {
-        const row = document.createElement('tr');
-        const timestamp = new Date(entry.id); // Assuming 'id' is a timestamp in milliseconds
-        row.innerHTML = `
-            <td>${entry.id}</td>
-            <td>${timestamp.toLocaleString()}</td>
-            <td>${formatTime(entry.activeTime)}</td>
-            <td>${formatTime(entry.idleTime)}</td>
-            <td>
-                <button class="btn btn-danger btn-sm" onclick="deleteData(${entry.id})">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-// Initialize log table on page load
-renderLogTable();
+// Initialize digital clock
+updateDigitalClock();
