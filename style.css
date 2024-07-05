@@ -34,3 +34,14 @@ table {
 td button {
     margin: 0;
 }
+
+/* External CSS styles */
+footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
