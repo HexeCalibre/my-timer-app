@@ -123,6 +123,26 @@ function logAction(action) {
   appendLogEntry(logEntry);
 }
 
+// Function to log actions with timestamp
+function logAction(action) {
+  const timestamp = new Date().toLocaleString("en-GB", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  }).replace(",", ""); // Adjust this format to your desired format
+  
+  const logEntry = {
+    timestamp: timestamp,
+    action: action,
+  };
+
+  // Append log entry to table
+  appendLogEntry(logEntry);
+}
+
 // Function to append log entry to table
 function appendLogEntry(logEntry) {
   const tableBody = document
